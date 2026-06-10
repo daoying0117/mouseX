@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="MouseX 使用桌面原生输入或浏览器备用路径测试鼠标回报率，测量不依赖屏幕刷新率。"
+    />
+    <title>MouseX Polling Rate Tester</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="M12 3v18" />
+              <path d="M7 7.5A5 5 0 0 1 12 3a5 5 0 0 1 5 4.5V13a5 5 0 0 1-10 0Z" />
+              <path d="M12 3v5" />
+            </svg>
+          </span>
+          <div>
+            <h1>MouseX</h1>
+            <p>鼠标回报率测试</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <span id="sourceBadge" class="badge">采样源: browser</span>
+          <span id="supportBadge" class="badge">检查中</span>
+          <span id="secureBadge" class="badge">安全上下文</span>
+          <button id="connectButton" class="button primary" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 8h10" />
+              <path d="M8 12h8" />
+              <path d="M10 16h4" />
+              <path d="M12 3v4" />
+              <path d="M12 17v4" />
+            </svg>
+            连接设备
+          </button>
+        </div>
+      </header>
+
+      <main class="shell">
+        <section class="hero-panel">
+          <div class="readout">
+            <div class="readout-label">实时回报率</div>
+            <div class="hz-line">
+              <span id="hzValue">0</span>
+              <span>Hz</span>
+            </div>
+            <div id="statusText" class="status-text">启动桌面采样或连接浏览器可访问设备后开始测试</div>
+          </div>
+
+          <div class="mode-card" aria-label="测试模式">
+            <div class="segmented" role="tablist" aria-label="测试模式">
+              <button id="moveModeButton" class="segment active" type="button" role="tab" aria-selected="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+                移动测试
+              </button>
+              <button id="idleModeButton" class="segment" type="button" role="tab" aria-selected="false">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 8v4l3 3" />
+                  <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                静置测试
+              </button>
+            </div>
+
+            <div class="mode-copy">
+              <h2 id="modeTitle">移动鼠标以采样</h2>
+              <p id="modeDescription">
+                点击开始后持续移动鼠标。桌面模式使用 Rust 原生输入采样，浏览器模式才使用 WebHID 或指针事件备用路径。
+              </p>
+            </div>
+
+            <div class="control-row">
+              <button id="startButton" class="button success" type="button" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 5v14l11-7Z" />
+                </svg>
+                开始
+              </button>
+              <button id="stopButton" class="button" type="button" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M8 6h8v12H8Z" />
+                </svg>
+                停止
+              </button>
+              <button id="resetButton" class="icon-button" type="button" title="重置数据" aria-label="重置数据">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 12a9 9 0 1 0 3-6.7" />
+                  <path d="M3 4v6h6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="metrics-grid" aria-label="测试指标">
+          <div class="metric">
+            <span>平均间隔</span>
+            <strong id="avgInterval">0.00 ms</strong>
+          </div>
+          <div class="metric">
+            <span>最小 / 最大</span>
+            <strong id="rangeInterval">0.00 / 0.00 ms</strong>
+          </div>
+          <div class="metric">
+            <span>样本数</span>
+            <strong id="sampleCount">0</strong>
+          </div>
+          <div class="metric">
+            <span>移动距离</span>
+            <strong id="motionCount">0</strong>
+          </div>
+        </section>
+
+        <section class="work-grid">
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div>
+                <h2>报告间隔</h2>
+                <p>最近 256 个采样事件，越低代表回报率越高</p>
+              </div>
+              <span id="windowHz" class="chip">窗口 0 Hz</span>
+            </div>
+            <canvas id="intervalCanvas" width="1200" height="360" aria-label="采样事件间隔图"></canvas>
+          </div>
+
+          <aside class="panel side-panel">
+            <div class="panel-head">
+              <div>
+                <h2>设备</h2>
+                <p id="deviceName">未连接</p>
+              </div>
+            </div>
+            <dl class="device-list">
+              <div>
+                <dt>Vendor ID</dt>
+                <dd id="vendorId">-</dd>
+              </div>
+              <div>
+                <dt>Product ID</dt>
+                <dd id="productId">-</dd>
+              </div>
+              <div>
+                <dt>Report ID</dt>
+                <dd id="reportId">-</dd>
+              </div>
+              <div>
+                <dt>最后报告</dt>
+                <dd id="lastReport">-</dd>
+              </div>
+            </dl>
+            <div id="notice" class="notice">
+              WebHID 需要 Chrome / Edge 等 Chromium 浏览器，并且页面需运行在 HTTPS 或 localhost。标准鼠标 HID
+              collection 通常受浏览器保护，无法直接读取报告。
+            </div>
+            <div class="collection-box">
+              <h3>HID Collections</h3>
+              <div id="collectionList" class="collection-list">未连接</div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="panel log-panel">
+          <div class="panel-head">
+            <div>
+              <h2>事件日志</h2>
+              <p>用于确认连接、开始、停止和采样状态</p>
+            </div>
+            <button id="clearLogButton" class="text-button" type="button">清空</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th>类型</th>
+                  <th>内容</th>
+                </tr>
+              </thead>
+              <tbody id="logBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

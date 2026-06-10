@@ -1,0 +1,26 @@
+{
+  "name": "mousex",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "dev:lan": "vite --host 0.0.0.0",
+    "dev:tauri-ui": "vite --host 127.0.0.1 --port 1420 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "preview:lan": "vite preview --host 0.0.0.0",
+    "serve:lan": "node scripts/serve-lan.mjs",
+    "serve:https-lan": "node scripts/serve-https-lan.mjs",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.2",
+    "vite": "^5.4.19"
+  }
+}
