@@ -595,7 +595,7 @@ function updateSupport() {
   if (!hid) {
     els.notice.textContent = "当前浏览器不支持 WebHID。请使用桌面版 Chrome、Edge 或其他 Chromium 浏览器。";
   } else if (!secure) {
-    els.notice.textContent = "WebHID 需要 HTTPS 或 localhost。请通过本地开发服务器访问本页面。";
+    els.notice.textContent = "浏览器调试模式请通过 localhost 本地开发服务器访问。";
   }
 }
 
